@@ -1,21 +1,26 @@
-use std::fs;
+mod config;
 
-static VERSION_URL: &'static str = "https://github.com/ruanswanepoel/host-file-manager/releases/latest";
-static DOWNLOAD_URL: &'static str = "https://github.com/ruanswanepoel/host-file-manager/releases/latest/download/hfm.exe";
+use std::fs;
+use config::Config;
 
 fn main() {
 
-    if !fs::metadata("version.txt").is_ok() {
-        fs::write("version.txt", "0.0.0").expect("Unable to create version.txt");
+    let config = Config::new().unwrap();
+    let base_url = format!("https://github.com/{}/{}", config.owner, config.repo);
+    let version_url = format!("{}/releases/latest", base_url);
+    let download_url = format!("{}/releases/latest/download/hfm.exe", base_url);
+
+    if !fs::metadata("version").is_ok() {
+        fs::write("version", "0.0.0").expect("Unable to create version file");
     }
     
     let current = get_current_version();
-    let latest = get_latest_version();
+    let latest = get_version_from_url(&version_url);
 
     if current != latest {
         println!("New version available: {}", latest);
         println!("Downloading...");
-        download_latest_version();
+        download_from_url(&download_url);
         set_current_version(latest);
         println!("Done!");
     } else {
@@ -25,16 +30,16 @@ fn main() {
 }
 
 fn get_current_version() -> String {
-    fs::read_to_string("version.txt").unwrap()
+    fs::read_to_string("version").expect("Unable to read version file")
 }
 
 fn set_current_version(version: String) {
-    fs::write("version.txt", version).expect("Unable to write to version.txt");
+    fs::write("version", version).expect("Unable to write to version");
 }
 
-fn get_latest_version() -> String {
+fn get_version_from_url(url: &String) -> String {
     let client = reqwest::blocking::Client::new();
-    let response = client.get(VERSION_URL)
+    let response = client.get(url)
         .header("Accept", "application/json")
         .send()
         .unwrap();
@@ -44,9 +49,9 @@ fn get_latest_version() -> String {
     tag_name.to_string()
 }
 
-fn download_latest_version() {
+fn download_from_url(url: &String) {
     let client = reqwest::blocking::Client::new();
-    let mut response = client.get(DOWNLOAD_URL)
+    let mut response = client.get(url)
         .header("Accept", "application/json")
         .send()
         .unwrap();
