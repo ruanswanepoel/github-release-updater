@@ -5,7 +5,7 @@ use config::Config;
 
 fn main() {
 
-    let config = Config::new().unwrap();
+    let config = Config::new("config.json");
     let base_url = format!("https://github.com/{}/{}", config.owner, config.repo);
     let version_url = format!("{}/releases/latest", base_url);
     let download_url = format!("{}/releases/latest/download/hfm.exe", base_url);
