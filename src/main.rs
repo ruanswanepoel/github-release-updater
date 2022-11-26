@@ -18,8 +18,7 @@ fn main() {
     let latest = get_version_from_url(&version_url);
 
     if current != latest {
-        println!("New version available: {}", latest);
-        println!("Downloading...");
+        println!("Download latest version of {} (Current = {}, Latest = {})", config.repo, latest, current);
         download_from_url(&download_url);
         set_current_version(latest);
         println!("Done!");
