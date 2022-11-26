@@ -5,21 +5,22 @@ use serde::{Serialize, Deserialize};
 pub struct Config {
     pub owner: String,
     pub repo: String,
+    pub filename: String,
 }
 
 impl Config {
     pub fn new(file: &str) -> Config {
-        let data = fs::read_to_string(file).expect("Unable to read config file");
-        serde_json::from_str(&data).expect("Unable to parse config file")
+        let data = fs::read_to_string(file).expect("Failed to read config file");
+        serde_json::from_str(&data).expect("Failed to parse config file")
     }
 
     pub fn init(file: &str) {
-        fs::write(file, EXAMPLE_CONTENT).expect("Unable to create config file");
+        fs::write(file, EXAMPLE_CONTENT).expect("Failed to create config file");
     }
 }
 
 const EXAMPLE_CONTENT: &str = r#"{
     "owner": "ruanswanepoel",
     "repo": "host-file-manager",
-    "path": "./Host File Manager"
+    "filename": "hfm.exe"
 }"#;
