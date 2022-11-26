@@ -3,22 +3,29 @@ mod config;
 use std::fs;
 use config::Config;
 
+const CONFIG_FILE: &str = "config.json";
+const VERSION_FILE: &str = "version";
+
 fn main() {
 
-    let config = Config::new("config.json");
+    if !fs::metadata(CONFIG_FILE).is_ok() {
+        Config::init(CONFIG_FILE);
+    }
+
+    let config = Config::new(CONFIG_FILE);
     let base_url = format!("https://github.com/{}/{}", config.owner, config.repo);
     let version_url = format!("{}/releases/latest", base_url);
     let download_url = format!("{}/releases/latest/download/hfm.exe", base_url);
 
-    if !fs::metadata("version").is_ok() {
-        fs::write("version", "0.0.0").expect("Unable to create version file");
+    if !fs::metadata(VERSION_FILE).is_ok() {
+        fs::write(VERSION_FILE, "0.0.0").expect("Unable to create version file");
     }
     
     let current = get_current_version();
     let latest = get_version_from_url(&version_url);
 
     if current != latest {
-        println!("Download latest version of {} (Current = {}, Latest = {})", config.repo, latest, current);
+        println!("Download latest version of {} (Current = {}, Latest = {})", config.repo, current, latest);
         download_from_url(&download_url);
         set_current_version(latest);
         println!("Done!");
@@ -29,11 +36,11 @@ fn main() {
 }
 
 fn get_current_version() -> String {
-    fs::read_to_string("version").expect("Unable to read version file")
+    fs::read_to_string(VERSION_FILE).expect("Unable to read version file")
 }
 
 fn set_current_version(version: String) {
-    fs::write("version", version).expect("Unable to write to version");
+    fs::write(VERSION_FILE, version).expect("Unable to write to version");
 }
 
 fn get_version_from_url(url: &String) -> String {
